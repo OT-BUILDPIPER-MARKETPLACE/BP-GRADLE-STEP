@@ -13,8 +13,14 @@ docker build -t ot/gradle:0.1 .
 
 * Testing
 ```
-docker run -it --rm -v $PWD:/src -e WORKSPACE=/ -e CODEBASE_DIR=src -e INSTRUCTION=build ot/gradle:0.1
+docker run -it --rm -v $PWD:/src -e WORKSPACE=/ -e CODEBASE_DIR=src ot/gradle:0.1
+```
+
+* Debugging
+```
+docker run -it --rm -v $PWD:/src -e WORKSPACE=/ -e CODEBASE_DIR=src --entrypoint bash  ot/gradle:0.1
 ```
 
 ## Reference
 * [Documentation](https://docs.gradle.org/current/userguide/userguide.html)
+* [Sample Mobile App](https://github.com/feedhenry-templates/helloworld-android-gradle)
