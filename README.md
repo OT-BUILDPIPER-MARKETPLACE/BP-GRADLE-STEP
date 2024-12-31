@@ -8,17 +8,17 @@ I'll enable gradle as a build tool in BuildPiper
 ```
 git submodule init
 git submodule update
-docker build -t ot/gradle:0.1 .
+docker build -t registry.buildpiper.in/gradle-build:0.1 .
 ```
 
 * Testing
 ```
-docker run -it --rm -v $PWD:/src -e WORKSPACE=/ -e CODEBASE_DIR=src ot/gradle:0.1
+docker run -it --rm -v $PWD:/src -e WORKSPACE=/ -e CODEBASE_DIR=src registry.buildpiper.in/gradle-build:0.1
 ```
 
 * Debugging
 ```
-docker run -it --rm -v $PWD:/src -e WORKSPACE=/ -e CODEBASE_DIR=src --entrypoint bash  ot/gradle:0.1
+docker run -it --rm -v $PWD:/src -e WORKSPACE=/ -e CODEBASE_DIR=src --entrypoint bash  registry.buildpiper.in/gradle-build:0.1
 ```
 
 ## Reference
