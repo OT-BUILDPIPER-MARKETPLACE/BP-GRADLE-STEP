@@ -13,12 +13,10 @@ cd "${CODEBASE_LOCATION}" || {
     TASK_STATUS="1"
     saveTaskStatus ${TASK_STATUS} ${ACTIVITY_SUB_TASK_CODE}
 }
+# Checking versions
+logInfoMessage "Checking versions..." &&gradle gradle --version && java --version
 
 logInfoMessage "Starting processing at [$CODEBASE_LOCATION]"
-logInfoMessage "gradle --version"
-gradle --version
-logInfoMessage "java --version"
-java --version
 
 export ANDROID_SDK_ROOT="/usr/local/android-sdk"
 logInfoMessage "Accepting Android SDK licenses"

@@ -15,7 +15,7 @@ RUN mkdir -p $ANDROID_SDK_ROOT/cmdline-tools && \
     unzip commandlinetools.zip -d $ANDROID_SDK_ROOT/cmdline-tools && \
     mv $ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/tools && \
     rm commandlinetools.zip
-    BP-BASE-SHELL-STEPS
+
 # Accept licenses and install necessary SDK components
 RUN yes | $ANDROID_SDK_ROOT/cmdline-tools/tools/bin/sdkmanager --licenses && \
     $ANDROID_SDK_ROOT/cmdline-tools/tools/bin/sdkmanager "platform-tools" "build-tools;33.0.2" "platforms;android-33"
