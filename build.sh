@@ -4,45 +4,75 @@ source /opt/buildpiper/shell-functions/log-functions.sh
 
 CODEBASE_LOCATION="${WORKSPACE}/${CODEBASE_DIR}"
 
-logInfoMessage "Build the code available at [$WORKSPACE] and have mounted at [$CODEBASE_DIR]"
+logInfoMessage "📁 Build the code available at [$WORKSPACE] and mounted at [$CODEBASE_DIR]"
+sleep "$SLEEP_DURATION"
 
-sleep $SLEEP_DURATION
-# Change to codebase location
 cd "${CODEBASE_LOCATION}" || {
-    logErrorMessage "Failed to navigate to $CODEBASE_LOCATION. Directory does not exist."
-    TASK_STATUS="1"
-    saveTaskStatus ${TASK_STATUS} ${ACTIVITY_SUB_TASK_CODE}
+    logErrorMessage "❌ Failed to navigate to $CODEBASE_LOCATION. Directory does not exist."
+    exit 1
 }
-# Checking versions
-logInfoMessage "Checking versions..." &&gradle gradle --version && java --version
 
-logInfoMessage "Starting processing at [$CODEBASE_LOCATION]"
+# ===============================
+# 🧠 Set Java version dynamically
+# ===============================
+case "$JAVA_VERSION" in
+  11)
+    JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+    ;;
+  17)
+    JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+    ;;
+  21)
+    JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+    ;;
+  *)
+    logErrorMessage "❗ Unsupported JAVA_VERSION: $JAVA_VERSION. Defaulting to Java 17"
+    JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+    ;;
+esac
+export JAVA_HOME
+export PATH="$JAVA_HOME/bin:$PATH"
 
-export ANDROID_SDK_ROOT="/usr/local/android-sdk"
-logInfoMessage "Accepting Android SDK licenses"
-$ANDROID_SDK_ROOT/cmdline-tools/tools/bin/sdkmanager --licenses <<< "y" >/dev/null
+logInfoMessage "✅ Using Java: $(java -version 2>&1 | head -n 1)"
+logInfoMessage "👉 java path: $(command -v java)"
 
+# ===============================
+# 🧠 Set Gradle version dynamically
+# ===============================
+case "$GRADLE_VERSION" in
+  7.4.2)
+    GRADLE_PATH="/opt/gradle/gradle-7.4.2"
+    ;;
+  8.4)
+    GRADLE_PATH="/opt/gradle/gradle-8.4"
+    ;;
+  8.9)
+    GRADLE_PATH="/opt/gradle/gradle-8.9"
+    ;;
+  *)
+    logErrorMessage "❗ Unsupported GRADLE_VERSION: $GRADLE_VERSION. Defaulting to 7.4.2"
+    GRADLE_PATH="/opt/gradle/gradle-7.4.2"
+    ;;
+esac
 
-# Check if ROOT_BUILD_DIR is set and navigate accordingly
-if [ -n "$ROOT_BUILD_DIR" ]; then
-    logInfoMessage "Navigating to gradle root build directory: $ROOT_BUILD_DIR"
-    cd "$ROOT_BUILD_DIR" || {
-        logErrorMessage "Failed to navigate to gradle root build directory: $ROOT_BUILD_DIR. Directory does not exist."
-        exit 1
-    }
+if [[ -d "$GRADLE_PATH" ]]; then
+  export GRADLE_HOME="$GRADLE_PATH"
+  export PATH="$GRADLE_HOME/bin:$PATH"
+  GRADLE_VERSION_OUTPUT=$(gradle --version 2>/dev/null | grep Gradle | head -n 1)
+  logInfoMessage "✅ Using Gradle: ${GRADLE_VERSION_OUTPUT:-Unknown or Not Found}"
+  logInfoMessage "👉 gradle path: $(command -v gradle)"
 else
-    logInfoMessage "ROOT_BUILD_DIR is not set. Running gradle command in the current directory."
+  logErrorMessage "❌ Gradle directory not found at $GRADLE_PATH"
+  exit 1
 fi
 
-logInfoMessage "gradle $INSTRUCTION"
+# ===============================
+# 🏗️  Run Gradle Build
+# ===============================
+logInfoMessage "🚀 Starting processing at [$CODEBASE_LOCATION]"
+logInfoMessage "🔧 Executing: gradle $INSTRUCTION"
+
 gradle $INSTRUCTION
 TASK_STATUS=$?
-logInfoMessage "exit_code: ${TASK_STATUS}"
-
-logInfoMessage "Listing directory to check build...."
-ls -ltr 
-
-logInfoMessage "Finding apk files in $ROOT_BUILD_DIR dir...."
-find . -type f -name "*.apk"
 
 saveTaskStatus ${TASK_STATUS} ${ACTIVITY_SUB_TASK_CODE}

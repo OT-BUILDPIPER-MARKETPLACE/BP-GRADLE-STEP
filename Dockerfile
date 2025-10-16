@@ -1,33 +1,52 @@
-# Base image with Gradle and JDK 11
-FROM gradle:7.0.2-jdk11
+# Base image
+FROM ubuntu:22.04
 
-# Install necessary tools
-RUN apt update && apt install -y \
+# Set non-interactive mode
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install base dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
     wget \
     unzip \
     jq \
+    git \
+    zip \
+    libicu-dev \
+    ca-certificates \
+    openjdk-11-jdk \
+    openjdk-17-jdk \
+    openjdk-21-jdk \
     && rm -rf /var/lib/apt/lists/*
 
-# Set up Android SDK
-ENV ANDROID_SDK_ROOT=/usr/local/android-sdk
-RUN mkdir -p $ANDROID_SDK_ROOT/cmdline-tools && \
-    wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O commandlinetools.zip && \
-    unzip commandlinetools.zip -d $ANDROID_SDK_ROOT/cmdline-tools && \
-    mv $ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/tools && \
-    rm commandlinetools.zip
+# Install multiple Gradle versions
+ENV GRADLE_HOME_BASE=/opt/gradle
+RUN mkdir -p $GRADLE_HOME_BASE && \
+    curl -sSL https://services.gradle.org/distributions/gradle-7.4.2-bin.zip -o gradle-7.4.2-bin.zip && \
+    curl -sSL https://services.gradle.org/distributions/gradle-8.4-bin.zip -o gradle-8.4-bin.zip && \
+    curl -sSL https://services.gradle.org/distributions/gradle-8.9-bin.zip -o gradle-8.9-bin.zip && \
+    unzip -q gradle-7.4.2-bin.zip -d $GRADLE_HOME_BASE && \
+    unzip -q gradle-8.4-bin.zip -d $GRADLE_HOME_BASE && \
+    unzip -q gradle-8.9-bin.zip -d $GRADLE_HOME_BASE && \
+    rm gradle-*.zip
 
-# Accept licenses and install necessary SDK components
-RUN yes | $ANDROID_SDK_ROOT/cmdline-tools/tools/bin/sdkmanager --licenses && \
-    $ANDROID_SDK_ROOT/cmdline-tools/tools/bin/sdkmanager "platform-tools" "build-tools;33.0.2" "platforms;android-33"
+# Default versions (can be overridden at runtime)
+ENV JAVA_VERSION=17
+ENV GRADLE_VERSION=7.4.2
 
-# Copy shell functions and build script
+
+# Copy buildpiper shell functions and build script
 COPY BP-BASE-SHELL-STEPS /opt/buildpiper/shell-functions/
+RUN chmod +x /opt/buildpiper/shell-functions/*
+
+WORKDIR /workspace
 COPY build.sh .
 
-# Set environment variables
+# Default environment variables
 ENV SLEEP_DURATION="5s"
 ENV ACTIVITY_SUB_TASK_CODE=""
 ENV INSTRUCTION=""
 
-# Entry point for the container
-ENTRYPOINT [ "./build.sh" ]
+
+# Run env setup then build script
+ENTRYPOINT ["bash", "./build.sh"]
