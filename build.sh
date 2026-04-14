@@ -1,6 +1,6 @@
 #!/bin/bash
 source /opt/buildpiper/shell-functions/functions.sh
-source /opt/buildpiper/shell-functions/log-functions.sh
+#source /opt/buildpiper/shell-functions/log-functions.sh
 
 echo "Build the code available at [$WORKSPACE] and have mounted at [$CODEBASE_DIR]"
 sleep  $SLEEP_DURATION
