@@ -1,0 +1,3 @@
+image: registry.buildpiper.in/bp-impl/gradle-step
+old tag: non-root
+new tag: nr_v0.1
