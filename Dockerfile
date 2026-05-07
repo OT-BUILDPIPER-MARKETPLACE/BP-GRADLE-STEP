@@ -1,7 +1,7 @@
 FROM gradle:jdk11
 
-RUN groupadd -g 1001 buildpiper && \
-    useradd -m -u 1001 -g buildpiper -s /bin/bash buildpiper
+RUN groupadd -g 65522 buildpiper && \
+    useradd -m -u 65522 -g buildpiper -s /bin/bash buildpiper
 
 RUN apt update || true \
     && apt install jq -y
